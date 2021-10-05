@@ -1,3 +1,4 @@
+from djreservation.views import ProductReservationView
 from re import match, split
 from urllib import parse
 from django.shortcuts import render
@@ -43,6 +44,11 @@ LINE_ACCESS_SECRET = os.environ.get("LINE_ACCESS_SECRET")
 line_bot_api = LineBotApi(channel_access_token=CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(channel_secret=LINE_ACCESS_SECRET)
 
+"""
+class MyObjectReservation(ProductReservationView):
+    base_model = book     # required
+    amount_field = 'quantity'  # required
+"""
 
 @csrf_exempt
 def callback(request):
@@ -118,7 +124,7 @@ def handle_text_message(event):
     if text == "予約":
 
         line_bot_api.reply_message(
-            event.reply_token, messages=select_date())
+            event.reply_token, messages=select_menu())
 
     if text == "予約内容の確認":
         line_bot_api.reply_message(
@@ -190,11 +196,10 @@ def handler_postback(event):
             event.reply_token,
             TextSendMessage(text="予約完了しました。ご来院の際は、LINEのプロフィール名をお伝えください")
         )
-        split_date = splitdata[1].split('-')
-        dt_aware = make_aware(datetime.datetime(
-            int(split_date[0]), int(split_date[1]), int(split_date[2]), int(splitdata[2]), 0, 0, 1000))
-        print(dt_aware)
-        #Reservation.objects.create(reservation_date=dt_aware, user=User(user_id=event.source.user_id))
+        # split_date = splitdata[1].split('-')
+        # dt_aware = make_aware(datetime.datetime(int(split_date[0]), int(split_date[1]), int(split_date[2]), int(splitdata[2]), 0, 0, 1000))
+        # print(dt_aware)
+        # Reservation.objects.create(reservation_date=dt_aware, user=User(user_id=event.source.user_id))
 
     elif splitdata[0] == "no":
         line_bot_api.reply_message(
@@ -208,6 +213,17 @@ def handler_postback(event):
             event.reply_token,
             TextSendMessage(
                 text="キャンセルしました。予約は行われておりません。予約を再度行う際は、予約ボタンを押してください")
+        )
+    elif splitdata[0] == "other":
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(
+                text="予約は行われておりません。")
+        )
+    elif splitdata[0] == "check":
+        line_bot_api.reply_message(
+            event.reply_token,
+            messages=select_date()
         )
 
 
@@ -571,6 +587,72 @@ def info(event):
                         "text": "なかもり歯科医院",
                         "size": "sm",
                         "align": "center"
+                    }
+                ]
+            }
+        }
+    )
+    return container_obj
+
+
+def select_menu():
+    container_obj = FlexSendMessage(
+        alt_text="menu",
+        contents={
+            "type": "bubble",
+            "header": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": "ご来院の理由を選択してください",
+                        "margin": "md",
+                        "align": "center",
+                        "wrap": True
+                    }
+                ]
+            },
+            "body": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                    {
+                        "type": "button",
+                        "action": {
+                            "type": "postback",
+                            "label": "定期健診",
+                            "data": "check"
+                        },
+                        "margin": "md"
+                    },
+                    {
+                        "type": "button",
+                        "action": {
+                            "type": "postback",
+                            "label": "治療・その他",
+                            "data": "other"
+                        },
+                        "margin": "md"
+                    },
+                    {
+                        "type": "separator",
+                        "margin": "xxl"
+                    }
+                ]
+            },
+            "footer": {
+                "type": "box",
+                "layout": "vertical",
+                "contents": [
+                    {
+                        "type": "button",
+                        "action": {
+                            "type": "postback",
+                            "label": "キャンセル",
+                            "data": "cancel"
+                        },
+                        "margin": "md"
                     }
                 ]
             }

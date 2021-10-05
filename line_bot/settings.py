@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'reserve_system.apps.ReserveSystemConfig'
+    'reserve_system.apps.ReserveSystemConfig',
+    'djreservation'
 ]
 
 MIDDLEWARE = [
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'djreservation.middleware.ReservationMiddleware',
 ]
 
 ROOT_URLCONF = 'line_bot.urls'
@@ -129,3 +131,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+DEFAULT_FROM_EMAIL = "akiresu133@gmail.com"
+EMAIL_HOST = "localhost"
+EMAIL_PORT = "1025"
